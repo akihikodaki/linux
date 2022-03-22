@@ -180,6 +180,8 @@ ifeq ($(VERSION_ON_UPSTREAM),1)
     endif
     UPSTREAM_TARBALL_NAME:=$(patsubst v%,%,$(_TAG))
   endif
+else
+  SNAPSHOT:=0
 endif
 
 DISTRO_BUILD:=$(PREBUILD)$(shell echo $(BUILD) | sed -e 's|\(^[0-9]\{1,4\}\)\..*|\1|')
