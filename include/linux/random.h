@@ -60,7 +60,7 @@ void random_register_extrng(const struct random_extrng *rng);
 void random_unregister_extrng(void);
 
 #ifndef MODULE
-extern const struct file_operations random_fops;
+extern const struct file_operations random_fops, urandom_fops;
 #endif
 
 u32 get_random_u32(void);
