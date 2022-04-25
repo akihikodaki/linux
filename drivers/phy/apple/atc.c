@@ -634,6 +634,18 @@ static const struct phy_ops apple_atc_usb3_phy_ops = {
 	.power_off = atcphy_usb3_power_off,
 };
 
+static void atcpphy_usb2_reset(struct apple_atcphy *atcphy)
+{
+	/* reset the PHY for good measure */
+	clear32(atcphy->regs.usb2phy + USB2PHY_CTL, USB2PHY_CTL_APB_RESET_N);
+	set32(atcphy->regs.usb2phy + USB2PHY_CTL,
+	      USB2PHY_CTL_RESET | USB2PHY_CTL_PORT_RESET);
+	udelay(10);
+	set32(atcphy->regs.usb2phy + USB2PHY_CTL, USB2PHY_CTL_APB_RESET_N);
+	clear32(atcphy->regs.usb2phy + USB2PHY_CTL,
+		USB2PHY_CTL_RESET | USB2PHY_CTL_PORT_RESET);
+}
+
 static int atcphy_usb2_power_on(struct phy *phy)
 {
 	struct apple_atcphy *atcphy = phy_get_drvdata(phy);
@@ -644,14 +656,7 @@ static int atcphy_usb2_power_on(struct phy *phy)
 	clear32(atcphy->regs.usb2phy + USB2PHY_CTL, USB2PHY_CTL_SIDDQ);
 	udelay(10);
 
-	/* reset the PHY for good measure */
-	clear32(atcphy->regs.usb2phy + USB2PHY_CTL, USB2PHY_CTL_APB_RESET_N);
-	set32(atcphy->regs.usb2phy + USB2PHY_CTL,
-	      USB2PHY_CTL_RESET | USB2PHY_CTL_PORT_RESET);
-	udelay(10);
-	set32(atcphy->regs.usb2phy + USB2PHY_CTL, USB2PHY_CTL_APB_RESET_N);
-	clear32(atcphy->regs.usb2phy + USB2PHY_CTL,
-		USB2PHY_CTL_RESET | USB2PHY_CTL_PORT_RESET);
+	atcpphy_usb2_reset(atcphy);
 
 	set32(atcphy->regs.usb2phy + USB2PHY_SIG,
 	      USB2PHY_SIG_VBUSDET_FORCE_VAL | USB2PHY_SIG_VBUSDET_FORCE_EN |
@@ -700,6 +705,7 @@ static int atcphy_usb2_set_mode(struct phy *phy, enum phy_mode mode,
 		set32(atcphy->regs.usb2phy + USB2PHY_SIG, USB2PHY_SIG_HOST);
 		set32(atcphy->regs.usb2phy + USB2PHY_USBCTL,
 		      USB2PHY_USBCTL_HOST_EN);
+		atcpphy_usb2_reset(atcphy);
 		ret = 0;
 		break;
 
